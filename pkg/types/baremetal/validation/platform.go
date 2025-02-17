@@ -409,16 +409,23 @@ func validateRootDeviceHints(hosts []*baremetal.Host, fldPath *field.Path) (erro
 // validateProvisioningNetworkDisabledSupported validates hosts bmc address support provisioning network is disabled
 func validateProvisioningNetworkDisabledSupported(hosts []*baremetal.Host, fldPath *field.Path) (errors field.ErrorList) {
 	for idx, host := range hosts {
-		accessDetails, err := bmc.NewAccessDetails(host.BMC.Address, host.BMC.DisableCertificateVerification)
-		if err != nil {
-			errors = append(errors, field.Invalid(fldPath.Index(idx).Child("BMC"), host.BMC.Address, err.Error()))
-		} else if accessDetails.RequiresProvisioningNetwork() {
-			msg := fmt.Sprintf("driver %s requires provisioning network", accessDetails.Driver())
-			errors = append(errors, field.Invalid(fldPath.Index(idx).Child("BMC"), host.BMC.Address, msg))
+		if err := ValidateSingleProvisioningNetworkDisabledSupported(host.BMC, fldPath, idx); err != nil {
+			errors = append(errors, err)
 		}
 	}
 
 	return
+}
+
+func ValidateSingleProvisioningNetworkDisabledSupported(hostBmc baremetal.BMC, fldPath *field.Path, idx int) *field.Error {
+	accessDetails, err := bmc.NewAccessDetails(hostBmc.Address, hostBmc.DisableCertificateVerification)
+	if err != nil {
+		return field.Invalid(fldPath.Index(idx).Child("BMC"), hostBmc.Address, err.Error())
+	} else if accessDetails.RequiresProvisioningNetwork() {
+		msg := fmt.Sprintf("driver %s requires provisioning network", accessDetails.Driver())
+		return field.Invalid(fldPath.Index(idx).Child("BMC"), hostBmc.Address, msg)
+	}
+	return nil
 }
 
 // ValidatePlatform checks that the specified platform is valid.
