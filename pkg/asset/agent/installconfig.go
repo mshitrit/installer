@@ -143,12 +143,21 @@ func (a *OptionalInstallConfig) validatePlatformsByName(installConfig *types.Ins
 		}
 	}
 
-	if installConfig.Platform.Name() == vsphere.Name {
-		allErrs = append(allErrs, a.validateVSpherePlatform(installConfig)...)
-	}
+	switch installConfig.Platform.Name() {
+	case vsphere.Name:
+		{
+			allErrs = append(allErrs, a.validateVSpherePlatform(installConfig)...)
+		}
+	case baremetal.Name:
+		{
+			allErrs = append(allErrs, baremetalvalidation.ValidateSoleBMCCredentials(installConfig.Platform.BareMetal)...)
 
-	if installConfig.Platform.Name() == baremetal.Name || installConfig.Platform.Name() == none.Name {
-		allErrs = append(allErrs, a.validateBMCConfig(installConfig)...)
+			allErrs = append(allErrs, a.validateBMCConfig(installConfig)...)
+		}
+	case none.Name:
+		{
+			allErrs = append(allErrs, a.validateBMCConfig(installConfig)...)
+		}
 	}
 
 	return allErrs
