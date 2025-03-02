@@ -159,7 +159,11 @@ type Platform struct {
 	// +optional
 	ProvisioningDHCPRange string `json:"provisioningDHCPRange,omitempty"`
 
-	// Hosts is the information needed to create the objects in Ironic.
+	// FencingCredentials stores the information about a baremetal host's management controller, it is mutually exclusive with Hosts.
+	// +optional
+	FencingCredentials []*common.FencingCredential `json:"fencingCredentials,omitempty"`
+
+	// Hosts is the information needed to create the objects in Ironic, it is mutually exclusive with FencingCredentials.
 	Hosts []*Host `json:"hosts"`
 
 	// DefaultMachinePlatform is the default configuration used when
