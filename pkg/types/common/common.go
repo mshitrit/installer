@@ -17,6 +17,12 @@ type BMC struct {
 	DisableCertificateVerification bool   `json:"disableCertificateVerification"`
 }
 
+// FencingCredential stores the information about a baremetal host's management controller.
+type FencingCredential struct {
+	HostName string `json:"hostName,omitempty" validate:"required,uniqueField"`
+	BMC      BMC    `json:"bmc"`
+}
+
 // ValidateUniqueAndRequiredFields validated unique fields are indeed unique and that required fields exist on a generic element.
 func ValidateUniqueAndRequiredFields[T any](elements []T, fldPath *field.Path, filter validator.FilterFunc, fieldName string) field.ErrorList {
 	errs := field.ErrorList{}

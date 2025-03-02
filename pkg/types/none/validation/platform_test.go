@@ -71,12 +71,12 @@ func TestValidateProvisioning(t *testing.T) {
 }
 
 type fcBuilder struct {
-	none.FencingCredential
+	common.FencingCredential
 }
 
 func fc1() *fcBuilder {
 	return &fcBuilder{
-		none.FencingCredential{
+		common.FencingCredential{
 			HostName: "host1",
 			BMC: common.BMC{
 				Username: "root",
@@ -89,7 +89,7 @@ func fc1() *fcBuilder {
 
 func fc2() *fcBuilder {
 	return &fcBuilder{
-		none.FencingCredential{
+		common.FencingCredential{
 			HostName: "host2",
 			BMC: common.BMC{
 				Username: "root",
@@ -100,7 +100,7 @@ func fc2() *fcBuilder {
 	}
 }
 
-func (hb *fcBuilder) build() *none.FencingCredential {
+func (hb *fcBuilder) build() *common.FencingCredential {
 	return &hb.FencingCredential
 }
 
