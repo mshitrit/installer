@@ -474,6 +474,8 @@ func ValidateProvisioning(p *baremetal.Platform, n *types.Networking, fldPath *f
 
 	allErrs = append(allErrs, validateProvisioningBootstrapNetworking(p, fldPath)...)
 
+	allErrs = append(allErrs, validateProvisioningFencingCredentials(p, fldPath)...)
+
 	return allErrs
 }
 
@@ -612,9 +614,18 @@ func validateProvisioningBootstrapNetworking(p *baremetal.Platform, fldPath *fie
 	return errorList
 }
 
-// ValidateSoleBMCCredentials validates that FencingCredentials and Hosts are mutually exclusive, in order to make sure fencing is controlled by a single process.
-func ValidateSoleBMCCredentials(p *baremetal.Platform) field.ErrorList {
-	fldPath := field.NewPath("platform").Child("baremetal")
+func validateProvisioningFencingCredentials(p *baremetal.Platform, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	allErrs = append(allErrs, validateSoleBMCCredentials(p, fldPath)...)
+
+	allErrs = append(allErrs, validateFencingCredentials(p.FencingCredentials, fldPath)...)
+
+	return allErrs
+}
+
+// validateSoleBMCCredentials validates that FencingCredentials and Hosts are mutually exclusive, in order to make sure fencing is controlled by a single process.
+func validateSoleBMCCredentials(p *baremetal.Platform, fldPath *field.Path) field.ErrorList {
 	errorList := field.ErrorList{}
 	if len(p.FencingCredentials) > 0 && len(p.Hosts) > 0 {
 		errorList = append(errorList, field.Forbidden(fldPath.Child("fencingCredentials"), "fencingCredentials and hosts are mutually exclusive, so only one of them may exist"))

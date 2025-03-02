@@ -172,6 +172,7 @@ func (a *PlatformProvisionCheck) Generate(ctx context.Context, dependencies asse
 			return err
 		}
 	case external.Name, none.Name:
+		//TODO mshitrit potentially none validation goes here ?
 		// no special provisioning requirements to check
 	case nutanix.Name:
 		err := nutanixconfig.ValidateForProvisioning(ic.Config)

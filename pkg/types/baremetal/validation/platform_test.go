@@ -479,6 +479,45 @@ func TestValidateProvisioning(t *testing.T) {
 			expected: "baremetal.hosts\\[0\\].BMC.Password: Required value: missing Password",
 		},
 		{
+			name: "hosts_and_fencingcredentials_mutually_exclusive",
+			platform: platform().
+				Hosts(host1()).
+				FencingCredentials(fc1()).build(),
+			expected: "baremetal.fencingCredentials: Forbidden: fencingCredentials and hosts are mutually exclusive, so only one of them may exist",
+		},
+		{
+			name: "duplicate_bmc_address",
+			platform: platform().
+				FencingCredentials(
+					fc1().BMCAddress("ipmi://192.168.111.1"),
+					fc2().BMCAddress("ipmi://192.168.111.1")).build(),
+			expected: "baremetal.fencingCredentials\\[1\\].BMC.Address: Duplicate value: \"ipmi://192.168.111.1\"",
+		},
+		{
+			name: "bmc_address_required",
+			platform: platform().
+				FencingCredentials(fc1().BMCAddress("")).build(),
+			expected: "baremetal.fencingCredentials\\[0\\].BMC.Address: Required value: missing Address",
+		},
+		{
+			name: "bmc_username_required",
+			platform: platform().
+				FencingCredentials(fc1().BMCUsername("")).build(),
+			expected: "baremetal.fencingCredentials\\[0\\].BMC.Username: Required value: missing Username",
+		},
+		{
+			name: "bmc_password_required",
+			platform: platform().
+				FencingCredentials(fc1().BMCPassword("")).build(),
+			expected: "baremetal.fencingCredentials\\[0\\].BMC.Password: Required value: missing Password",
+		},
+		{
+			name: "host_name_required",
+			platform: platform().
+				FencingCredentials(fc1().HostName("")).build(),
+			expected: "baremetal.fencingCredentials\\[0\\].HostName: Required value: missing HostName",
+		},
+		{
 			name: "valid_with_os_image_overrides",
 			platform: platform().
 				BootstrapOSImage(imagesServer.URL + "/images/qemu.x86_64.qcow2.gz?sha256=3b5a882c2af3e19d515b961855d144f293cab30190c2bdedd661af31a1fc4e2f").
@@ -1085,4 +1124,66 @@ func (nb *networkingBuilder) Network(cidr string) *networkingBuilder {
 
 func (nb *networkingBuilder) build() *types.Networking {
 	return &nb.Networking
+}
+
+func (pb *platformBuilder) FencingCredentials(builders ...*fcBuilder) *platformBuilder {
+	pb.Platform.FencingCredentials = nil
+	for _, builder := range builders {
+		pb.Platform.FencingCredentials = append(pb.Platform.FencingCredentials, builder.build())
+	}
+	return pb
+}
+
+type fcBuilder struct {
+	common.FencingCredential
+}
+
+func fc1() *fcBuilder {
+	return &fcBuilder{
+		common.FencingCredential{
+			HostName: "host1",
+			BMC: common.BMC{
+				Username: "root",
+				Password: "password",
+				Address:  "ipmi://192.168.111.1",
+			},
+		},
+	}
+}
+
+func fc2() *fcBuilder {
+	return &fcBuilder{
+		common.FencingCredential{
+			HostName: "host2",
+			BMC: common.BMC{
+				Username: "root",
+				Password: "password",
+				Address:  "ipmi://192.168.111.2",
+			},
+		},
+	}
+}
+
+func (hb *fcBuilder) build() *common.FencingCredential {
+	return &hb.FencingCredential
+}
+
+func (hb *fcBuilder) HostName(value string) *fcBuilder {
+	hb.FencingCredential.HostName = value
+	return hb
+}
+
+func (hb *fcBuilder) BMCAddress(value string) *fcBuilder {
+	hb.FencingCredential.BMC.Address = value
+	return hb
+}
+
+func (hb *fcBuilder) BMCUsername(value string) *fcBuilder {
+	hb.FencingCredential.BMC.Username = value
+	return hb
+}
+
+func (hb *fcBuilder) BMCPassword(value string) *fcBuilder {
+	hb.FencingCredential.BMC.Password = value
+	return hb
 }

@@ -142,7 +142,7 @@ func (a *OptionalInstallConfig) validatePlatformsByName(installConfig *types.Ins
 					ExternalPlatformNameOci, fieldPath, external.CloudControllerManagerTypeExternal)))
 		}
 	}
-
+	//TODO mshitrit revert switch case
 	switch installConfig.Platform.Name() {
 	case vsphere.Name:
 		{
@@ -150,8 +150,6 @@ func (a *OptionalInstallConfig) validatePlatformsByName(installConfig *types.Ins
 		}
 	case baremetal.Name:
 		{
-			allErrs = append(allErrs, baremetalvalidation.ValidateSoleBMCCredentials(installConfig.Platform.BareMetal)...)
-
 			allErrs = append(allErrs, a.validateBMCConfig(installConfig)...)
 		}
 	case none.Name:
